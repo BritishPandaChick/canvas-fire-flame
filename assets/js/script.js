@@ -8,19 +8,38 @@ window.onload = function(){
     canvas.height = H;
 
     var particles = [];
+    var mouse = {};
 
     //Lets create some particles now 
     var particle_count = 100;
     for (var i = 0; i < particle_count; i++) {
-        particles.push(new particle_count());
+        particles.push(new particle());
+    }
+
+    //finally some mouse tracking 
+    canvas.addEventListener('mousemove', track_mouse, false);
+
+    function track_mouse(e){
+        //since the canvas = full page the position of the mouse 
+        //relative to the document will suffice 
+        mouse.x = e.pageX; 
+        mouse.y = e.pageY;
     }
 
     function particle(){
         //speed, life, location, life, colors 
-        //speed range = -2.5 to 2.5
-        this.speed = {x: -2.5 + Math.random()*5, y : -2.5+Math.random()*5};
-        //location = center of the screen
-        this.location = {x: W/2, y: H/2};
+        //speed x range = -2.5 to 2.5
+        //speed y range = -15 to -5 to make it move upwards
+        //lets change the Y speed to make it look like a flame 
+        this.speed = {x: -2.5 + Math.random()*5, y: -15+Math.random()*10};
+        //location = mouse coordinates
+        //Now the flame follows the mouse coordinates
+        if(mouse.x && mouse.y) {
+            this.location = {x: mouse.x, y: mouse.y};
+        } else {
+            this.location = {x: W/2, y: H/2};
+        }
+        
         //radius range = 10-30 
         this.radius = 10 + Math.random()*20;
         //life range = 20-30 
@@ -35,8 +54,13 @@ window.onload = function(){
     function draw(){
         //Painting the canvas black
         //Time for lighting magic
+        //particles are painted with "lighter"
+        //in the next frame the background is painted normally without blending to the 
+        //previous frame
+        ctx.globalCompositeOperation = "source-over";
         ctx.fillStyle = "black";
         ctx.fillRect(0, 0, W, H);
+        ctx.globalCompositeOperation = "lighter";
 
         for (var i = 0; i < particles.length; i++){
             var p = particles[i];
